@@ -14,10 +14,12 @@ window.addEventListener('load', async function() {
   let hasBeenClicked = false;
   let chosenLanguage = undefined;
   let chosenWordIndex = 0;
+  let scoreTotal = 0;
 
   const word = document.getElementById('word');
   const options = document.getElementById('options');
   const message = document.getElementById('message');
+  const score = document.getElementById('score');
   const happyEmojiList = ["🐁", "😀", "🤗", "🤠", "🤡", "🥳"];
   const sadEmojiList = ["😔", "😓", "😢", "🙁", "😭", "😳"];
   const listLimit = 4;
@@ -51,17 +53,24 @@ window.addEventListener('load', async function() {
     message.classList.remove(className);
   }
 
+  function updateScore() {
+    localStorage.setItem("score", scoreTotal);
+    score.innerHTML = `Score: ${scoreTotal}`;
+  }
+
   function initialiseGame() {
     if (wordList.length) {
       hasBeenClicked = false;
       const languages = Object.keys(wordList[0]);
       chosenLanguage = languages[getRandomNumber(languages.length)];
       chosenWordIndex = getRandomNumber(listLimit);
+      scoreTotal = parseInt(localStorage.getItem("score")) || 0;
 
       shuffleArray(wordList);
       word.innerHTML = wordList[chosenWordIndex][chosenLanguage];
       options.innerHTML = "";
       message.innerHTML = "";
+      updateScore();
       wordList.slice(0, listLimit).forEach(word => {
         const option = document.createElement('div');
         option.className = 'option';
@@ -81,6 +90,8 @@ window.addEventListener('load', async function() {
       const timeout = 1 * 1000;
       if (word[chosenLanguage] === wordList[chosenWordIndex][chosenLanguage]) {
         updateAnswer(option, `Correct! ${happyEmojiList[getRandomNumber(happyEmojiList.length)]}`, "correct");
+        scoreTotal += 1;
+        updateScore();
         setTimeout(() => {
           clearAnswer(option, "correct");
           hasBeenClicked = false;
@@ -88,6 +99,8 @@ window.addEventListener('load', async function() {
         }, timeout);
       } else {
         updateAnswer(option, `Incorrect! ${sadEmojiList[getRandomNumber(sadEmojiList.length)]}`, "incorrect");
+        scoreTotal = Math.max(0, scoreTotal - 1);
+        updateScore();
         setTimeout(() => {
           clearAnswer(option, "incorrect");
           hasBeenClicked = false;
