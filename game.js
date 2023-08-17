@@ -1,11 +1,3 @@
-const wordList = [
-  { "french": "Avoir", "lebanese": "كان عندي" },
-  { "french": "Être", "lebanese": "كون" },
-  { "french": "Autre mots", "lebanese": "Other words" },
-  { "french": "Souris", "lebanese": "Mouse" },
-  { "french": "Caca", "lebanese": "Poop" },
-];
-
 function getRandomNumber(limit) {
   return Math.floor(Math.random() * limit);
 }
@@ -17,20 +9,28 @@ function shuffleArray(array) {
   }
 }
 
-window.addEventListener('load', function () {
-  // let wordList = [];
+window.addEventListener('load', async function() {
+  let wordList = [];
   let hasBeenClicked = false;
   let chosenLanguage = undefined;
   let chosenWordIndex = 0;
+
+  const word = document.getElementById('word');
+  const options = document.getElementById('options');
+  const message = document.getElementById('message');
   const happyEmojiList = ["🐁", "😀", "🤗", "🤠", "🤡", "🥳"];
   const sadEmojiList = ["😔", "😓", "😢", "🙁", "😭", "😳"];
   const listLimit = 4;
 
-  /*
-  // With this code we could be able to load dynamically the wordList, but we need to host the file to avoid CORs issues.
-  fetch('./wordList.json')
+  await fetch('https://raw.githubusercontent.com/jmdeejay/word-association/main/wordList.json', {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json',
+    },
+  })
+    .then((response) => response.json())
     .then((data) => {
-      wordList = JSON.parse(data);
+      wordList = data;
       initialiseGame();
     })
     .catch(error => {
@@ -38,9 +38,6 @@ window.addEventListener('load', function () {
       message.innerHTML = "Error while fetching/parsing the words list.";
       message.classList.add("incorrect");
     });
-  */
-
-  initialiseGame();
 
   function updateAnswer(option, value, className) {
     message.innerHTML = value;
