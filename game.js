@@ -19,28 +19,40 @@ window.addEventListener('load', async function() {
   const word = document.getElementById('word');
   const options = document.getElementById('options');
   const message = document.getElementById('message');
+  const newGameBtn = document.getElementById('newGame');
   const score = document.getElementById('score');
   const happyEmojiList = ["🐁", "😀", "🤗", "🤠", "🤡", "🥳"];
   const sadEmojiList = ["😔", "😓", "😢", "🙁", "😭", "😳"];
   const listLimit = 4;
 
-  await fetch('https://raw.githubusercontent.com/jmdeejay/word-association/main/wordList.json', {
-    method: 'GET',
-    headers: {
-      'Accept': 'application/json',
-    },
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      wordList = data;
-      console.log("Word list loaded successfully.");
-      initialiseGame();
+  newGameBtn.onclick = () => {
+    scoreTotal = 0;
+    updateScore();
+    loadWordList();
+  }
+
+  (loadWordList = function () {
+    fetch('https://raw.githubusercontent.com/jmdeejay/word-association/main/wordList.json', {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+      },
     })
-    .catch(error => {
-      console.error('Error fetching JSON:', error);
-      message.innerHTML = "Error while fetching/parsing the words list.";
-      message.classList.add("incorrect");
-    });
+      .then((response) => response.json())
+      .then((data) => {
+        wordList = data;
+        console.log("Word list loaded successfully.");
+        initialiseGame();
+      })
+      .catch(error => {
+        console.error('Error fetching JSON:', error);
+        message.innerHTML = "Error while fetching/parsing the words list.";
+        message.classList.add("incorrect");
+      })
+      .finally(() => {
+        newGameBtn.disabled = false;
+      });
+  })();
 
   function updateAnswer(option, value, className) {
     message.innerHTML = value;
