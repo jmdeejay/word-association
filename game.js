@@ -33,6 +33,7 @@ window.addEventListener('load', async function() {
     .then((response) => response.json())
     .then((data) => {
       wordList = data;
+      console.log("Word list loaded successfully.");
       initialiseGame();
     })
     .catch(error => {
@@ -78,6 +79,7 @@ window.addEventListener('load', async function() {
         option.addEventListener('click', () => checkAnswer(option, word));
         options.appendChild(option);
       });
+      console.log("Game successfully initialised.");
     } else {
       message.innerHTML = "List must have at least one entry.";
       message.classList.add("incorrect");
