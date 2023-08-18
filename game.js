@@ -10,24 +10,30 @@ function shuffleArray(array) {
 }
 
 window.addEventListener('load', async function() {
-  let wordList = [];
-  let hasBeenClicked = false;
-  let chosenLanguage = undefined;
-  let chosenWordIndex = 0;
-  let scoreTotal = 0;
-
   const word = document.getElementById('word');
   const options = document.getElementById('options');
   const message = document.getElementById('message');
   const newGameBtn = document.getElementById('newGame');
+  const difficultyList = document.getElementById('difficultyList');
   const score = document.getElementById('score');
   const happyEmojiList = ["🐁", "😀", "🤗", "🤠", "🤡", "🥳"];
   const sadEmojiList = ["😔", "😓", "😢", "🙁", "😭", "😳"];
-  const listLimit = 4;
+  const difficulties = {
+    easy: {label: "Easy", value: 2},
+    moderate: {label: "Moderate", value: 4},
+    hard: {label: "Hard", value: 6},
+    expert: {label: "Expert", value: 8}
+  }
+
+  let wordList = [];
+  let hasBeenClicked = false;
+  let difficulty = difficulties.moderate;
+  let chosenLanguage = undefined;
+  let chosenWordIndex = 0;
+  let scoreTotal = 0;
 
   newGameBtn.onclick = () => {
-    scoreTotal = 0;
-    updateScore();
+    updateScore(0);
     loadWordList();
   }
 
@@ -66,35 +72,67 @@ window.addEventListener('load', async function() {
     message.classList.remove(className);
   }
 
-  function updateScore() {
-    localStorage.setItem("score", scoreTotal);
-    score.innerHTML = `Score: ${scoreTotal}`;
+  function updateScore(value) {
+    scoreTotal = value;
+    localStorage.setItem("score", value);
+    score.innerHTML = `Score: ${value}`;
+  }
+
+  function updateDifficulty(value) {
+    difficulty = value;
+    const dropdownLabel = document.getElementsByClassName('dropdown-btn')[0];
+    dropdownLabel.children[0].textContent = value.label;
+    localStorage.setItem("difficulty", JSON.stringify(value));
   }
 
   function initialiseGame() {
     if (wordList.length) {
       hasBeenClicked = false;
+      difficulty = JSON.parse(localStorage.getItem("difficulty")) || difficulties.moderate;
       const languages = Object.keys(wordList[0]);
       chosenLanguage = languages[getRandomNumber(languages.length)];
-      chosenWordIndex = getRandomNumber(listLimit);
+      chosenWordIndex = getRandomNumber(difficulty.value);
       scoreTotal = parseInt(localStorage.getItem("score")) || 0;
 
-      shuffleArray(wordList);
-      word.innerHTML = wordList[chosenWordIndex][chosenLanguage];
       options.innerHTML = "";
       message.innerHTML = "";
-      updateScore();
-      wordList.slice(0, listLimit).forEach(word => {
-        const option = document.createElement('div');
-        option.className = 'option';
-        option.textContent = chosenLanguage === "french" ? word.lebanese : word.french;
-        option.addEventListener('click', () => checkAnswer(option, word));
-        options.appendChild(option);
-      });
+      difficultyList.innerHTML = "";
+      shuffleArray(wordList);
+      word.innerHTML = wordList[chosenWordIndex][chosenLanguage];
+      populateOptions();
+      populateDifficulties();
+      updateDifficulty(difficulty);
+      updateScore(scoreTotal);
       console.log("Game successfully initialised.");
     } else {
       message.innerHTML = "List must have at least one entry.";
       message.classList.add("incorrect");
+    }
+  }
+
+  function populateOptions() {
+    wordList.slice(0, difficulty.value).forEach(word => {
+      const option = document.createElement('div');
+      option.className = 'option';
+      option.textContent = chosenLanguage === "french" ? word.lebanese : word.french;
+      option.addEventListener('click', () => checkAnswer(option, word));
+      options.appendChild(option);
+    });
+  }
+
+  function populateDifficulties() {
+    for (const key in difficulties) {
+      const entry = difficulties[key];
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.textContent = entry.label;
+      li.appendChild(a);
+      li.addEventListener('click', () => {
+        updateDifficulty(difficulties[key] || difficulties.moderate);
+        document.getElementById("dropdown").checked = false;
+        initialiseGame();
+      });
+      difficultyList.appendChild(li);
     }
   }
 
@@ -104,8 +142,7 @@ window.addEventListener('load', async function() {
       const timeout = 1 * 1000;
       if (word[chosenLanguage] === wordList[chosenWordIndex][chosenLanguage]) {
         updateAnswer(option, `Correct! ${happyEmojiList[getRandomNumber(happyEmojiList.length)]}`, "correct");
-        scoreTotal += 1;
-        updateScore();
+        updateScore(scoreTotal + 1);
         setTimeout(() => {
           clearAnswer(option, "correct");
           hasBeenClicked = false;
@@ -113,8 +150,7 @@ window.addEventListener('load', async function() {
         }, timeout);
       } else {
         updateAnswer(option, `Incorrect! ${sadEmojiList[getRandomNumber(sadEmojiList.length)]}`, "incorrect");
-        scoreTotal = Math.max(0, scoreTotal - 1);
-        updateScore();
+        updateScore(Math.max(0, scoreTotal - 1));
         setTimeout(() => {
           clearAnswer(option, "incorrect");
           hasBeenClicked = false;
