@@ -114,7 +114,7 @@ window.addEventListener('load', async function() {
     wordList.slice(0, difficulty.value).forEach(word => {
       const option = document.createElement('div');
       option.className = 'option';
-      option.textContent = chosenLanguage === "french" ? word.lebanese : word.french;
+      option.textContent = chosenLanguage === "fr" ? word.lb : word.fr;
       option.addEventListener('click', () => checkAnswer(option, word));
       options.appendChild(option);
     });
